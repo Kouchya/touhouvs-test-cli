@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <msgbox></msgbox>
-    <inputbar :messages="messages"></inputbar>
+    <msgbox :messages="messages"></msgbox>
+    <inputbar></inputbar>
   </div>
 </template>
 

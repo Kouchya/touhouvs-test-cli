@@ -1,7 +1,7 @@
 <template>
   <div>
     <form action="">
-      <input id="m" autocomplete="off" v-bind="msg"><button @click="sendMsg">Send</button>
+      <input id="m" autocomplete="off" v-model="msg"><button @click="sendMsg">Send</button>
     </form>
   </div>
 </template>
