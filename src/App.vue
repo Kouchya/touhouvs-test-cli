@@ -1,17 +1,30 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <msgbox></msgbox>
+    <inputbar :messages="messages"></inputbar>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import msgbox from './components/msgbox.vue'
+import inputbar from './components/inputbar.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    msgbox,
+    inputbar
+  },
+  data () {
+    return {
+      messages: []
+    }
+  },
+  mounted () {
+    this.$socket.on('chat message', msg => {
+      this.messages.push(msg)
+      window.scrollTo(0, document.body.scrollHeight)
+    })
   }
 }
 </script>
