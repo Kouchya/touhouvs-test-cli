@@ -1,0 +1,14 @@
+{
+	"Reimu": {
+    "name": "Hakurei Reimu",
+    "basehp": 3000,
+    "hp": 3000,
+    "sc": []
+  },
+  "Marisa": {
+    "name": "Kirisame Marisa",
+    "basehp": 2400,
+    "hp": 2400,
+    "sc": []
+  }
+}

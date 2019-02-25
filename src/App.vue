@@ -1,29 +1,45 @@
 <template>
   <div id="app">
-    <msgbox :messages="messages"></msgbox>
-    <inputbar></inputbar>
+    <thvs-char v-if="status['char']" :chars="chars"></thvs-char>
   </div>
 </template>
 
 <script>
-import msgbox from './components/msgbox.vue'
-import inputbar from './components/inputbar.vue'
+import ThvsChar from './components/thvs-char.vue'
+
+import chars from './data/char.json'
 
 export default {
   name: 'app',
   components: {
-    msgbox,
-    inputbar
+    ThvsChar
   },
   data () {
     return {
-      messages: []
+      chars: chars,
+      status: {
+        char: true,
+        battle: false,
+        end: false
+      },
+      serverInfo: {
+        self: undefined,
+        oppo: undefined
+      }
+    }
+  },
+  methods: {
+    changeToStatus (status) {
+      for (let key of Object.keys(this.status)) {
+        this.status[key] = false
+      }
+      this.status[status] = true
     }
   },
   mounted () {
-    this.$socket.on('chat message', msg => {
-      this.messages.push(msg)
-      window.scrollTo(0, document.body.scrollHeight)
+    this.$socket.on('char selected', (char, oppo) => {
+      this.serverInfo.self = chars[char]
+      this.serverInfo.oppo = chars[oppo]
     })
   }
 }
