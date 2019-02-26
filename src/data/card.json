@@ -1,0 +1,38 @@
+{
+  "punch": {
+    "name": "punch"
+  },
+  "kick": {
+    "name": "kick"
+  },
+  "spirit": {
+    "name": "spirit"
+  },
+  "throw": {
+    "name": "throw"
+  },
+  "anger": {
+    "name": "anger"
+  },
+  "break": {
+    "name": "break"
+  },
+  "lvlup": {
+    "name": "lvlup"
+  },
+  "catch": {
+    "name": "catch"
+  },
+  "harden": {
+    "name": "harden"
+  },
+  "tackle": {
+    "name": "tackle"
+  },
+  "lure": {
+    "name": "lure"
+  },
+  "dream": {
+    "name": "dream"
+  }
+}

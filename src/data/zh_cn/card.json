@@ -1,0 +1,38 @@
+{
+  "punch": {
+    "name": "拳"
+  },
+  "kick": {
+    "name": "踢"
+  },
+  "spirit": {
+    "name": "灵"
+  },
+  "throw": {
+    "name": "掷"
+  },
+  "anger": {
+    "name": "怒"
+  },
+  "break": {
+    "name": "破"
+  },
+  "lvlup": {
+    "name": "集"
+  },
+  "catch": {
+    "name": "受"
+  },
+  "harden": {
+    "name": "固"
+  },
+  "tackle": {
+    "name": "开"
+  },
+  "lure": {
+    "name": "诱"
+  },
+  "dream": {
+    "name": "梦"
+  }
+}

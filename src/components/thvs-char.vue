@@ -1,9 +1,9 @@
 <template>
-	<div v-if="!chosen">
+	<div class="tac" v-if="!chosen">
 		<p>{{$t(`reminder.char.selectchar`)}}</p>
     <button v-for="(char, key) in chars" :key="key" @click="select(key)">{{$t(`char['${key}'].name`)}}</button>
 	</div>
-  <div v-else>
+  <div class="tac" v-else>
     <p>{{$t(`reminder.char.waiting`)}}</p>
   </div>
 </template>
