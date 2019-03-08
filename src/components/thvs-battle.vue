@@ -7,7 +7,7 @@
         <li>{{player.hp}}/{{player.basehp}}</li>
       </ul>
       <span>
-        <button class="handcard-display" v-for="(card, index) in player.handcards" :key="index" @click="prepareToUse(index)" :disabled="chosen.length >= player.uselimit || chosen.includes(index)">
+        <button v-for="(card, index) in player.handcards" :key="index" @click="prepareToUse(index)" :class="{'handcard-display': true, 'used': oppo.hasused.includes(card.name)}" :disabled="chosen.length >= player.uselimit || chosen.includes(index)">
           <ruby>{{$t(`card['${card.name}'].name`)}}<rt>{{card.atk}}/{{card.dfs}}</rt></ruby>
         </button>
       </span>
@@ -19,7 +19,7 @@
         <li>{{oppo.hp}}/{{oppo.basehp}}</li>
       </ul>
       <span>
-        <button class="handcard-display" v-for="(card, index) in oppo.handcards" :key="index" disabled>
+        <button v-for="(card, index) in oppo.handcards" :key="index" :class="{'handcard-display': true, 'used': oppo.hasused.includes(card.name)}" disabled>
           <ruby>{{$t(`card['${card.name}'].name`)}}<rt>{{card.atk}}/{{card.dfs}}</rt></ruby>
         </button>
       </span>
@@ -72,6 +72,10 @@ ul {
   display: inline;
   margin-left: 0.5em;
   margin-right: 0.5em;
+}
+
+.used {
+  color: #f00;
 }
 
 .char-display {

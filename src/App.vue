@@ -45,6 +45,15 @@ export default {
       this.serverInfo.oppo = oppo
       this.changeToStatus('battle')
     })
+
+    this.$socket.on('highlight card', (selfcard, oppocard) => {
+      if (selfcard !== undefined) {
+        this.serverInfo.self.hasused.push(selfcard)
+      }
+      if (oppocard !== undefined) {
+        this.serverInfo.oppo.hasused.push(oppocard)
+      }
+    })
   }
 }
 </script>
