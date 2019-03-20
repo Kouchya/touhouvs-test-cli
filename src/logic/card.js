@@ -1,5 +1,3 @@
-import results from './data/result.js'
-
 const CardInfo = {
   punch: {
     dmg: 50,
@@ -50,10 +48,18 @@ const CardInfo = {
 const CardNames = Object.keys(CardInfo)
 
 class Card {
-  constructor() {
-    this.name = CardNames[Math.floor(Math.random() * CardNames.length)]
-    this.atk = Math.floor(Math.random() * 10 + 1)
-    this.dfs = Math.floor(Math.random() * 10 + 1)
+  constructor(name, atk, dfs) {
+    this.name = name ? name : CardNames[Math.floor(Math.random() * CardNames.length)]
+    this.atk = atk ? atk : Math.floor(Math.random() * 10 + 1)
+    this.dfs = dfs ? dfs : Math.floor(Math.random() * 10 + 1)
+  }
+
+  serialize() {
+    return {
+      name: this.name,
+      atk: this.atk,
+      dfs: this.dfs
+    }
   }
 
   getBaseDamage() {

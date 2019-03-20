@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <thvs-char v-if="status.char" :chars="chars"></thvs-char>
-    <thvs-battle v-else-if="status.battle" :player="serverInfo.self" :oppo="serverInfo.oppo"></thvs-battle>
+    <thvs-battle v-else-if="status.battle" :player="serverInfo.self" :oppo="serverInfo.oppo" :info="consoleLog"></thvs-battle>
   </div>
 </template>
 
@@ -10,9 +10,9 @@ import ThvsChar from './components/thvs-char.vue'
 import ThvsBattle from './components/thvs-battle.vue'
 
 import charlist from './data/char.json'
-import results from './data/result.js'
 import chars from './logic/char.js'
 import card from './logic/card.js'
+import { consumeList } from './util.js'
 
 export default {
   name: 'app',
@@ -31,34 +31,76 @@ export default {
       serverInfo: {
         self: undefined,
         oppo: undefined
-      }
+      },
+      consoleLog: ''
     }
   },
   methods: {
     changeToStatus (status) {
+      if (this.status[status]) {
+        return
+      }
+
       for (let key of Object.keys(this.status)) {
         this.status[key] = false
       }
       this.status[status] = true
+    },
+    displayResults (results) {
+      consumeList({
+        interval: 1500,
+        list: results,
+        onItem: result => {
+          let args = result.args
+          for (const key in args) {
+            if (key.startsWith('player')) {
+              args[key] = this.$t(`char['${args[key]}'].name`)
+            } else if (key.startsWith('card')) {
+              args[key] = this.$t(`card['${args[key]}'].name`)
+            }
+          }
+          this.consoleLog += this.$t(`result['${result.content}']`, args) + '\n'
+        },
+        onFinish: () => {
+          this.consoleLog += '\n'
+          this.$socket.emit('roundend')
+        }
+      })
     }
   },
   mounted () {
     this.$socket.on('char selected', (plyrname, opponame) => {
       let plyr = new chars[plyrname]()
       let oppo = new chars[opponame]()
-      for (let i = 0; i < 7; i++) {
-        plyr.handcards.push(new card.Card())
-        oppo.handcards.push(new card.Card())
-      }
       this.serverInfo.self = plyr
       this.serverInfo.oppo = oppo
+      for (let i = 0; i < 7; i++) {
+        plyr.handcards.push(new card.Card())
+      }
+      this.$socket.emit('handcards', plyr.handcards.map(card => {
+        return card.serialize()
+      }))
+    })
+
+    this.$socket.on('oppo handcards', handcards => {
+      for (const hc of handcards) {
+        this.serverInfo.oppo.handcards.push(new card.Card(hc.name, hc.atk, hc.dfs))
+      }
+      this.$socket.emit('oppo recv')
+    })
+
+    this.$socket.on('battle', () => {
       this.changeToStatus('battle')
+    })
+
+    this.$socket.on('op prohibit', () => {
+      this.operable = false
     })
 
     this.$socket.on('chosen cards', (selfuse, oppouse) => {
       let plyr = this.serverInfo.self
       let oppo = this.serverInfo.oppo
-      results = []
+      let results = []
       for (let i = 0; selfuse[i] !== undefined || oppouse[i] !== undefined; i++) {
         let plyrcard, oppocard
         if (selfuse[i] !== undefined) {
@@ -68,6 +110,29 @@ export default {
         if (oppouse[i] !== undefined) {
           oppocard = oppo.card = oppo.handcards[oppouse[i]]
           oppo.hasused.push(oppocard.name)
+        }
+
+        if (plyrcard !== undefined) {
+          results.push({
+            'content': 'use-card',
+            'args': {
+              'player': plyr.name,
+              'card': plyrcard.name,
+              'atk': plyrcard.atk,
+              'dfs': plyrcard.dfs
+            }
+          })
+        }
+        if (oppocard !== undefined) {
+          results.push({
+            'content': 'use-card',
+            'args': {
+              'player': oppo.name,
+              'card': oppocard.name,
+              'atk': oppocard.atk,
+              'dfs': oppocard.dfs
+            }
+          })
         }
 
         let attacker, defender
@@ -111,10 +176,12 @@ export default {
         } else if (mode === 'normal') {
           // Fight!
           results.push({
-            'content': 'use hint',
+            'content': 'use-hint',
             'args': {
               'player': attacker.name,
-              'card': attacker.card.name
+              'card': attacker.card.name,
+              'atk': attacker.card.atk,
+              'dfs': attacker.card.dfs
             }
           })
           let factor = 1
@@ -143,7 +210,7 @@ export default {
               if (defender.card.dfs < attacker.card.atk) {
                 dmg /= 2
                 results.push({
-                  'content': 'weak harden',
+                  'content': 'weak-harden',
                   'args': {
                     'player': defender.name
                   }
@@ -151,7 +218,7 @@ export default {
               } else if (defender.card.dfs >= attacker.card.atk) {
                 dmg = 0
                 results.push({
-                  'content': 'strong harden',
+                  'content': 'strong-harden',
                   'args': {
                     'player': defender.name
                   }
@@ -165,29 +232,36 @@ export default {
                   'player': defender.name
                 }
               })
-              attacker.sufferDamage(attacker.card.getBaseDamage())
+              attacker.sufferDamage(attacker.card.getBaseDamage(), results)
               attacker.card.doEffect(defender, attacker)
               continue
             }
           }
 
           if (dmg > 0) {
-            defender.sufferDamage(dmg)
+            defender.sufferDamage(dmg, results)
           }
 
           attacker.card.doEffect(attacker, defender)
           if (defender.card !== undefined && defender.card.name === 'lvlup') {
             results.push({
-              'content': 'use hint',
+              'content': 'use-hint',
               'args': {
                 'player': defender.name,
-                'card': 'lvlup'
+                'card': 'lvlup',
+                'atk': defender.card.atk,
+                'dfs': defender.card.dfs
               }
             })
             defender.card.doEffect(defender, attacker)
           }
         }
       }
+      results.push({
+        'content': 'roundend',
+        'args': {}
+      })
+      this.displayResults(results)
     })
   }
 }

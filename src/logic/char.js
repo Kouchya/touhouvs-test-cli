@@ -1,5 +1,3 @@
-import results from './data/result.js'
-
 class Char {
   constructor(name, basehp, sc) {
     this.name = name
@@ -14,7 +12,7 @@ class Char {
     this.lvl = {num: 1, round: -1}
   }
 
-  sufferDamage(dmg) {
+  sufferDamage(dmg, results) {
     this.hp -= dmg
     results.push({
       'content': 'damage',
@@ -27,7 +25,7 @@ class Char {
       this.hp = 0
     }
     results.push({
-      'content': 'damage result',
+      'content': 'damage-result',
       'args': {
         'player': this.name,
         'num': this.hp

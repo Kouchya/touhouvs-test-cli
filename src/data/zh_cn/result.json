@@ -1,0 +1,13 @@
+{
+  "use-card": "{player} 宣言 1 张 {card}({atk}/{dfs})。",
+  "tied": "双方的动作没有造成任何影响……",
+  "use-hint": "{player} 的 {card}({atk}/{dfs}) 生效！",
+  "critical": "造成了暴击！",
+  "anti-critical": "伤害被大幅减弱……",
+  "weak-harden": "{player} 靠坚固的防御抵消了一些伤害。",
+  "strong-harden": "{player} 靠固若金汤的防御免疫了全部伤害。",
+  "lure": "然而被 {player} 诱骗了……",
+  "damage": "{player} 受到了 {num} 点伤害！",
+  "damage-result": "{player} 现在还剩 {num} 点生命值。",
+  "roundend": "========================  回合结束  ========================"
+}

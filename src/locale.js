@@ -1,5 +1,5 @@
 let lang = ['zh_cn']
-let part = ['char', 'reminder', 'card']
+let part = ['char', 'reminder', 'card', 'result']
 let langSet = {}
 
 lang.forEach(function (l) {
