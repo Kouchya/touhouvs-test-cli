@@ -1,57 +1,14 @@
-const CardInfo = {
-  punch: {
-    dmg: 50,
-    type: 'close'
-  },
-  kick: {
-    dmg: 60,
-    type: 'close'
-  },
-  spirit: {
-    dmg: 80,
-    type: 'remote'
-  },
-  throw: {
-    dmg: 70,
-    type: 'remote'
-  },
-  anger: {
-    dmg: 100,
-    type: 'remote'
-  },
-  break: {
-    dmg: 120,
-    type: 'close'
-  },
-  lvlup: {
-    dmg: 0,
-    type: 'lvlup'
-  },
-  harden: {
-    dmg: 0,
-    type: 'defend'
-  },
-  tackle: {
-    dmg: 80,
-    type: 'close'
-  },
-  lure: {
-    dmg: 0,
-    type: 'defend'
-  },
-  dream: {
-    dmg: 0,
-    type: 'special'
-  }
-}
-
-const CardNames = Object.keys(CardInfo)
+import { CardInfo, CardNames, SpellInfo } from './cardinfo.js'
 
 class Card {
-  constructor(name, atk, dfs) {
+  constructor(name, atk, dfs, subcards) {
     this.name = name ? name : CardNames[Math.floor(Math.random() * CardNames.length)]
     this.atk = atk ? atk : Math.floor(Math.random() * 10 + 1)
     this.dfs = dfs ? dfs : Math.floor(Math.random() * 10 + 1)
+    this.isSpell = !CardNames.includes(this.name)
+    this.info = this.isSpell ? SpellInfo[this.name] : CardInfo[this.name]
+    this.tag = this.isSpell ? '' : this.info.tag
+    this.subcards = subcards ? subcards : (this.isSpell ? [] : [this.name])
   }
 
   serialize() {
@@ -63,24 +20,27 @@ class Card {
   }
 
   getBaseDamage() {
-    return CardInfo[this.name].dmg
+    return this.info.dmg
   }
 
   getType() {
-    return CardInfo[this.name].type
+    return this.info.type ? this.info.type : 'remote'
   }
 
-  doEffect(owner, oppo) {
+  doEffect(owner, oppo, results) {
     // do card effects
+    /* if (this.isSpell) {
+      this.info.effect(owner, oppo, results)
+    } */
     if (this.name === 'break') {
       if (oppo.card !== undefined && oppo.card.name === 'harden') {
-        oppo.setCond('blocked', {round: 1, num: 2})
+        oppo.setCond('blocked', {round: 1, num: 2}, results)
       }
     } else if (this.name === 'lvlup') {
-      owner.levelUp(1)
+      owner.levelUp(1, 2, results)
     } else if (this.name === 'tackle') {
       if (oppo.card !== undefined && oppo.card.name === 'harden') {
-        oppo.levelDown(1)
+        oppo.levelDown(1, results)
       }
     }
   }

@@ -34,5 +34,68 @@
   },
   "dream": {
     "name": "梦"
+  },
+  "Musou Myoutama": {
+    "name": "梦想妙珠"
+  },
+  "Musou Fuuin": {
+    "name": "梦想封印"
+  },
+  "Musou Tensei": {
+    "name": "梦想天生"
+  },
+  "Circle Seal": {
+    "name": "封魔阵"
+  },
+  "Double Enchant": {
+    "name": "二重结界"
+  },
+  "Hakurei Bullet Enchant": {
+    "name": "博丽弹幕结界"
+  },
+  "Subspace Cavity": {
+    "name": "亚空穴"
+  },
+  "Subspace Cavity Teleport": {
+    "name": "亚空穴·瞬"
+  },
+  "Dream Subspace Cavity": {
+    "name": "梦想亚空穴"
+  },
+  "Persuasion Needle": {
+    "name": "封魔针"
+  },
+  "Kishin Persuasion Needle": {
+    "name": "鬼神封魔针"
+  },
+  "Onmyou Persuasion Needle": {
+    "name": "阴阳封魔针"
+  },
+  "Stardust": {
+    "name": "星尘"
+  },
+  "Stardust Fantasy": {
+    "name": "星屑幻想"
+  },
+  "Milky Way": {
+    "name": "银河"
+  },
+  "Witch Dash": {
+    "name": "魔女冲刺"
+  },
+  "Witch Fantasy": {
+    "name": "魔女幻想"
+  },
+  "Meteorite": {
+    "name": "彗星"
+  },
+  "Witch Bullet": {
+    "name": "魔女飞弹"
+  },
+  "Witch Shoot": {
+    "name": "魔女射击"
+  },
+  "Witch Starlight": {
+    "name": "魔女星光"
   }
 }

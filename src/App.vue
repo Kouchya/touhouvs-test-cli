@@ -57,6 +57,11 @@ export default {
               args[key] = this.$t(`char['${args[key]}'].name`)
             } else if (key.startsWith('card')) {
               args[key] = this.$t(`card['${args[key]}'].name`)
+            } else if (key === 'subcards') {
+              args[key] = args[key].map(card => {
+                return this.$t(`card['${card.name}'].name`) + `(${card.atk}/${card.dfs})`
+              }).reduce((str, name) => str + name + ' + ', '')
+              args[key] = args[key].substring(0, args[key].length - 3)
             }
           }
           this.consoleLog += this.$t(`result['${result.content}']`, args) + '\n'
@@ -100,39 +105,115 @@ export default {
     this.$socket.on('chosen cards', (selfuse, oppouse) => {
       let plyr = this.serverInfo.self
       let oppo = this.serverInfo.oppo
-      let results = []
-      for (let i = 0; selfuse[i] !== undefined || oppouse[i] !== undefined; i++) {
-        let plyrcard, oppocard
-        if (selfuse[i] !== undefined) {
-          plyrcard = plyr.card = plyr.handcards[selfuse[i]]
-          plyr.hasused.push(plyrcard.name)
+
+      let plyrstr = selfuse.reduce((str, index) => {
+        return str + plyr.handcards[index].tag
+      }, '')
+      let plyrrawcards = selfuse.map(index => {
+        return plyr.handcards[index]
+      })
+
+      let oppostr = oppouse.reduce((str, index) => {
+        return str + oppo.handcards[index].tag
+      }, '')
+      let opporawcards = oppouse.map(index => {
+        return oppo.handcards[index]
+      })
+
+      let plyrcards = []
+      while (plyrstr.length > 0) {
+        let match = false
+        for (let sc of plyr.sc) {
+          let res = sc.group.exec(plyrstr)
+          if (res !== null) {
+            match = true
+            plyrstr = plyrstr.substring(res[0].length)
+            let group = plyrrawcards.splice(0, res[0].length)
+            let name = sc.name[plyr.lvl.num - 1]
+            let atk = group.reduce((sum, card) => {
+              return sum + card.atk
+            }, 0)
+            let dfs = group.reduce((sum, card) => {
+              return sum + card.dfs
+            }, 0)
+            plyrcards.push(new card.Card(name, atk, dfs, group.map(card => {
+              return { name: card.name, atk: card.atk, dfs: card.dfs }
+            })))
+            break
+          }
         }
-        if (oppouse[i] !== undefined) {
-          oppocard = oppo.card = oppo.handcards[oppouse[i]]
-          oppo.hasused.push(oppocard.name)
+        if (!match) {
+          plyrstr = plyrstr.substring(1)
+          plyrcards.push(plyrrawcards.shift())
+        }
+      }
+
+      let oppocards = []
+      while (oppostr.length > 0) {
+        let match = false
+        for (let sc of oppo.sc) {
+          let res = sc.group.exec(oppostr)
+          if (res !== null) {
+            match = true
+            oppostr = oppostr.substring(res[0].length)
+            let group = opporawcards.splice(0, res[0].length)
+            let name = sc.name[oppo.lvl.num - 1]
+            let atk = group.reduce((sum, card) => {
+              return sum + card.atk
+            }, 0)
+            let dfs = group.reduce((sum, card) => {
+              return sum + card.dfs
+            }, 0)
+            oppocards.push(new card.Card(name, atk, dfs, group.map(card => {
+              return { name: card.name, atk: card.atk, dfs: card.dfs }
+            })))
+            break
+          }
+        }
+        if (!match) {
+          oppostr = oppostr.substring(1)
+          oppocards.push(opporawcards.shift())
+        }
+      }
+      
+      let results = []
+      for (let i = 0; plyrcards[i] !== undefined || oppocards[i] !== undefined; i++) {
+        let plyrcard = plyr.card = plyrcards[i]
+        let oppocard = oppo.card = oppocards[i]
+        if (plyrcard !== undefined) {
+          plyr.hasused = plyrcard.subcards
+        }
+        if (oppocard !== undefined) {
+          oppo.hasused = oppocard.subcards
         }
 
         if (plyrcard !== undefined) {
-          results.push({
-            'content': 'use-card',
-            'args': {
-              'player': plyr.name,
-              'card': plyrcard.name,
-              'atk': plyrcard.atk,
-              'dfs': plyrcard.dfs
-            }
-          })
+          let args = {
+            'player': plyr.name,
+            'card': plyrcard.name,
+            'atk': plyrcard.atk,
+            'dfs': plyrcard.dfs
+          }
+          let content = 'use-card'
+          if (plyrcard.isSpell) {
+            args.subcards = plyrcard.subcards
+            content = 'use-spell'
+          }
+          results.push({ content, args })
         }
         if (oppocard !== undefined) {
-          results.push({
-            'content': 'use-card',
-            'args': {
-              'player': oppo.name,
-              'card': oppocard.name,
-              'atk': oppocard.atk,
-              'dfs': oppocard.dfs
-            }
-          })
+          let args = {
+            'player': oppo.name,
+            'card': oppocard.name,
+            'atk': oppocard.atk,
+            'dfs': oppocard.dfs
+          }
+          let content = 'use-card'
+          if (oppocard.isSpell) {
+            args.subcards = oppocard.subcards
+            content = 'use-spell'
+          }
+          results.push({ content, args })
         }
 
         let attacker, defender
@@ -233,7 +314,7 @@ export default {
                 }
               })
               attacker.sufferDamage(attacker.card.getBaseDamage(), results)
-              attacker.card.doEffect(defender, attacker)
+              attacker.card.doEffect(defender, attacker, results)
               continue
             }
           }
@@ -242,7 +323,7 @@ export default {
             defender.sufferDamage(dmg, results)
           }
 
-          attacker.card.doEffect(attacker, defender)
+          attacker.card.doEffect(attacker, defender, results)
           if (defender.card !== undefined && defender.card.name === 'lvlup') {
             results.push({
               'content': 'use-hint',
@@ -253,7 +334,7 @@ export default {
                 'dfs': defender.card.dfs
               }
             })
-            defender.card.doEffect(defender, attacker)
+            defender.card.doEffect(defender, attacker, results)
           }
         }
       }
