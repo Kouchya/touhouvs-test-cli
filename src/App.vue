@@ -79,7 +79,14 @@ export default {
       let oppo = new chars[opponame]()
       this.serverInfo.self = plyr
       this.serverInfo.oppo = oppo
-      for (let i = 0; i < 7; i++) {
+      /* for (let i = 0; i < 7; i++) {
+        plyr.handcards.push(new card.Card())
+      } */
+      plyr.handcards.push(new card.Card('spirit'))
+      plyr.handcards.push(new card.Card('punch'))
+      plyr.handcards.push(new card.Card('break'))
+      plyr.handcards.push(new card.Card('lvlup'))
+      for (let i = 0; i < 3; i++) {
         plyr.handcards.push(new card.Card())
       }
       this.$socket.emit('handcards', plyr.handcards.map(card => {
@@ -103,93 +110,87 @@ export default {
     })
 
     this.$socket.on('chosen cards', (selfuse, oppouse) => {
-      let plyr = this.serverInfo.self
-      let oppo = this.serverInfo.oppo
-
       let plyrstr = selfuse.reduce((str, index) => {
-        return str + plyr.handcards[index].tag
+        return str + this.serverInfo.self.handcards[index].tag
       }, '')
       let plyrrawcards = selfuse.map(index => {
-        return plyr.handcards[index]
+        return this.serverInfo.self.handcards[index]
       })
 
       let oppostr = oppouse.reduce((str, index) => {
-        return str + oppo.handcards[index].tag
+        return str + this.serverInfo.oppo.handcards[index].tag
       }, '')
       let opporawcards = oppouse.map(index => {
-        return oppo.handcards[index]
+        return this.serverInfo.oppo.handcards[index]
       })
 
-      let plyrcards = []
-      while (plyrstr.length > 0) {
-        let match = false
-        for (let sc of plyr.sc) {
+      let results = []
+      while (plyrstr.length > 0 || oppostr.length > 0) {
+        let plyrcard, oppocard
+
+        let self_match = false
+        for (let sc of this.serverInfo.self.sc) {
           let res = sc.group.exec(plyrstr)
           if (res !== null) {
-            match = true
+            self_match = true
             plyrstr = plyrstr.substring(res[0].length)
             let group = plyrrawcards.splice(0, res[0].length)
-            let name = sc.name[plyr.lvl.num - 1]
+            let name = sc.name[this.serverInfo.self.lvl.num - 1]
             let atk = group.reduce((sum, card) => {
               return sum + card.atk
             }, 0)
             let dfs = group.reduce((sum, card) => {
               return sum + card.dfs
             }, 0)
-            plyrcards.push(new card.Card(name, atk, dfs, group.map(card => {
+            plyrcard = new card.Card(name, atk, dfs, group.map(card => {
               return { name: card.name, atk: card.atk, dfs: card.dfs }
-            })))
+            }))
             break
           }
         }
-        if (!match) {
+        if (!self_match) {
           plyrstr = plyrstr.substring(1)
-          plyrcards.push(plyrrawcards.shift())
+          plyrcard = plyrrawcards.shift()
         }
-      }
 
-      let oppocards = []
-      while (oppostr.length > 0) {
-        let match = false
-        for (let sc of oppo.sc) {
+        let oppo_match = false
+        for (let sc of this.serverInfo.oppo.sc) {
           let res = sc.group.exec(oppostr)
           if (res !== null) {
-            match = true
+            oppo_match = true
             oppostr = oppostr.substring(res[0].length)
             let group = opporawcards.splice(0, res[0].length)
-            let name = sc.name[oppo.lvl.num - 1]
+            let name = sc.name[this.serverInfo.oppo.lvl.num - 1]
             let atk = group.reduce((sum, card) => {
               return sum + card.atk
             }, 0)
             let dfs = group.reduce((sum, card) => {
               return sum + card.dfs
             }, 0)
-            oppocards.push(new card.Card(name, atk, dfs, group.map(card => {
+            oppocard = new card.Card(name, atk, dfs, group.map(card => {
               return { name: card.name, atk: card.atk, dfs: card.dfs }
-            })))
+            }))
             break
           }
         }
-        if (!match) {
+        if (!oppo_match) {
           oppostr = oppostr.substring(1)
-          oppocards.push(opporawcards.shift())
+          oppocard = opporawcards.shift()
         }
-      }
-      
-      let results = []
-      for (let i = 0; plyrcards[i] !== undefined || oppocards[i] !== undefined; i++) {
-        let plyrcard = plyr.card = plyrcards[i]
-        let oppocard = oppo.card = oppocards[i]
+
+        this.serverInfo.self.card = plyrcard
+        this.serverInfo.oppo.card = oppocard
+
         if (plyrcard !== undefined) {
-          plyr.hasused = plyrcard.subcards
+          this.serverInfo.self.hasused = plyrcard.subcards
         }
         if (oppocard !== undefined) {
-          oppo.hasused = oppocard.subcards
+          this.serverInfo.oppo.hasused = oppocard.subcards
         }
 
         if (plyrcard !== undefined) {
           let args = {
-            'player': plyr.name,
+            'player': this.serverInfo.self.name,
             'card': plyrcard.name,
             'atk': plyrcard.atk,
             'dfs': plyrcard.dfs
@@ -203,7 +204,7 @@ export default {
         }
         if (oppocard !== undefined) {
           let args = {
-            'player': oppo.name,
+            'player': this.serverInfo.oppo.name,
             'card': oppocard.name,
             'atk': oppocard.atk,
             'dfs': oppocard.dfs
@@ -220,30 +221,30 @@ export default {
         let mode = 'normal' // if not normal, then nobody moves
         if (plyrcard === undefined) {
           if (oppocard.getType() !== 'defend') {
-            attacker = oppo
-            defender = plyr
+            attacker = this.serverInfo.oppo
+            defender = this.serverInfo.self
           }
         } else if (oppocard === undefined) {
           if (plyrcard.getType() !== 'defend') {
-            attacker = plyr
-            defender = oppo
+            attacker = this.serverInfo.self
+            defender = this.serverInfo.oppo
           }
         } else if (plyrcard.getType() === 'defend') {
           if (oppocard.getType() !== 'defend') {
-            attacker = oppo
-            defender = plyr
+            attacker = this.serverInfo.oppo
+            defender = this.serverInfo.self
           }
         } else if (oppocard.getType() === 'defend') {
           if (plyrcard.getType() !== 'defend') {
-            attacker = plyr
-            defender = oppo
+            attacker = this.serverInfo.self
+            defender = this.serverInfo.oppo
           }
         } else if (plyrcard.atk > oppocard.atk) {
-          attacker = plyr
-          defender = oppo
+          attacker = this.serverInfo.self
+          defender = this.serverInfo.oppo
         } else if (plyrcard.atk < oppocard.atk) {
-          attacker = oppo
-          defender = plyr
+          attacker = this.serverInfo.oppo
+          defender = this.serverInfo.self
         } else {
           mode = 'tied'
         }
