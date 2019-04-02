@@ -1,0 +1,10 @@
+{
+  "blocked": "硬直",
+  "sealed": "封印",
+  "hurt": "创伤",
+  "handcard-limit": "手牌受限",
+  "handcard-up": "手牌提升",
+  "damage-fix": "伤害修正",
+  "uselimit-up": "使用牌数提升",
+  "uselimit-down": "使用牌数受限"
+}

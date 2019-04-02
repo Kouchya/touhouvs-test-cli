@@ -25,7 +25,7 @@ export default {
 
 <style scoped>
 .console {
-  height: 250px;
+  height: 300px;
   margin-top: 1em;
   margin-bottom: 2em;
   background-color: #fff;

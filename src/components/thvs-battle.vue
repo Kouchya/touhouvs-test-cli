@@ -5,7 +5,8 @@
         <h3>{{$t(`reminder.battle.self`)}}</h3>
         <ul>
           <li>{{$t(`char['${player.name}'].name`)}}</li>
-          <li>{{player.hp}}/{{player.basehp}}</li>
+          <li>{{$t(`reminder.battle.hp`)}}: {{player.hp}}/{{player.basehp}}</li>
+          <li>{{$t(`reminder.battle.lvl`)}}: {{player.lvl}}</li>
         </ul>
         <span>
           <button v-for="(card, index) in player.handcards" :key="index" @click="prepareToUse(index)" :class="{'handcard-display': true}" :disabled="!operable || chosen.length >= player.uselimit || chosen.includes(index)">
@@ -17,7 +18,8 @@
         <h3>{{$t(`reminder.battle.oppo`)}}</h3>
         <ul>
           <li>{{$t(`char['${oppo.name}'].name`)}}</li>
-          <li>{{oppo.hp}}/{{oppo.basehp}}</li>
+          <li>{{$t(`reminder.battle.hp`)}}: {{oppo.hp}}/{{oppo.basehp}}</li>
+          <li>{{$t(`reminder.battle.lvl`)}}: {{oppo.lvl}}</li>
         </ul>
         <span>
           <button v-for="(card, index) in oppo.handcards" :key="index" :class="{'handcard-display': true}" disabled>
