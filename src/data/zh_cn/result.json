@@ -28,6 +28,8 @@
   "clear-seal": "{player} 的 {card} 系列符卡解除了封印。",
   "set-atk": "{player} 的卡牌 {card}({atk}/{dfs}) 攻击力被强制置为 {num} 点！",
   "set-unavailable": "{player} 受到结界影响，{round} 回合内无法抽到 {card}！",
+  "rest-cards-add-atk": "{player} 的全部剩余手牌攻击力提升了 {num} 点！",
+  "rest-cards-lose-atk": "{player} 的全部剩余手牌攻击力降低了 {num} 点！",
   "both-do-nothing": "本回合双方似乎啥也没有做，这牌打得跟菜䍱锟似的……",
   "roundend": "========================  回合结束  ========================"
 }
